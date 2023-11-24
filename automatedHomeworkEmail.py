@@ -4,11 +4,12 @@ from email.message import EmailMessage
 from email.utils import formataddr
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # pip install python-dotenv
 
-# Change it to the gmail one
 PORT = 587
-EMAIL_SERVER = "smtp-mail.outlook.com"
+EMAIL_SERVER = (
+    "smtp-mail.outlook.com"  # Adjust server address, if you are not using @outlook
+)
 
 # Load the environment variables
 current_dir = Path(__file__).resolve().parent if "__file__" in locals() else Path.cwd()
@@ -18,3 +19,52 @@ load_dotenv(envars)
 # Read environment variables
 sender_email = os.getenv("EMAIL")
 password_email = os.getenv("PASSWORD")
+
+
+def send_email(subject, receiver_email, name, due_date, task, subjectt):
+    # Create the base text message.
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = formataddr(("Coding Is Fun Corp.", f"{sender_email}"))
+    msg["To"] = receiver_email
+    msg["BCC"] = sender_email
+
+    msg.set_content()(
+        f"""\
+        Hi {name}, 
+        Keep Going and don't give up!
+        I just wanted to remind you that you have to do {task} for your {subjectt} class
+        which is due on {due_date}.
+        """
+    )
+    # Add the thtml version
+    msg.add_alternative(
+        f"""\ 
+        
+         <html>
+            <body>
+                <p>Hi {name}, </p>
+                <p>Keep Going and don't give up!</p>
+                I just wanted to let to remind you that you have to do {task} for your {subjectt} class
+                which is due on {due_date}
+                </body>
+            </html>    
+        """,
+        subtype="html",
+    )
+
+    with smtplib.SMTP(EMAIL_SERVER, PORT) as server:
+        server.starttls()
+        server.login(sender_email, receiver_email)
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+
+
+if __name__ == "__main__":
+    send_email(
+        subject="Study Reminder",
+        name="Mehtab-Ali",
+        receiver_email="rmehtabali@gmail.com",
+        due_date="23, Nov 2023",
+        subjectt="Math",
+        task="homework",
+    )
